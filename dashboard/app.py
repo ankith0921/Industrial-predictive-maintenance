@@ -1,14 +1,9 @@
 import sys
 from pathlib import Path
 
-import requests
-import pandas as pd
-import streamlit as st
-
-
-# ============================================================
+# --------------------------------------------------
 # Project Root
-# ============================================================
+# --------------------------------------------------
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -16,7 +11,25 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 
+import requests
+import pandas as pd
+import streamlit as st
+
+from src.evaluation.evaluator import (
+    evaluate_xgboost,
+    evaluate_hybrid,
+)
+
 from src.scenarios.simulator import run_scenario
+
+
+@st.cache_data
+def get_model_evaluation():
+    """Load and cache production model evaluation results."""
+    return (
+        evaluate_xgboost(),
+        evaluate_hybrid(),
+    )
 
 
 # ============================================================
@@ -780,6 +793,8 @@ if "prediction" in st.session_state:
     # Model Explainability - SHAP
     # ========================================================
 
+    st.divider()
+
     st.html(
         """
         <div class="section-title">
@@ -963,6 +978,8 @@ if "prediction" in st.session_state:
     # ========================================================
     # What-If Risk Analysis
     # ========================================================
+
+    st.divider()
 
     st.write("")
 
@@ -1422,3 +1439,118 @@ if "prediction" in st.session_state:
             use_container_width=True,
             hide_index=True
         )
+
+    # ========================================================
+    # Model Performance
+    # ========================================================
+
+    st.divider()
+
+    xgb_results, hybrid_results = get_model_evaluation()
+
+    st.write("")
+
+    st.markdown("### Model Performance")
+
+    metric_col1, metric_col2, metric_col3 = st.columns(3)
+
+    with metric_col1:
+        st.metric(
+            "Accuracy",
+            f"{xgb_results['accuracy']:.2%}",
+            f"Hybrid: {hybrid_results['accuracy']:.2%}"
+        )
+
+    with metric_col2:
+        st.metric(
+            "Precision",
+            f"{xgb_results['precision']:.2%}",
+            f"Hybrid: {hybrid_results['precision']:.2%}"
+        )
+
+    with metric_col3:
+        st.metric(
+            "Recall",
+            f"{xgb_results['recall']:.2%}",
+            f"Hybrid: {hybrid_results['recall']:.2%}"
+        )
+
+    metric_col1, metric_col2, metric_col3 = st.columns(3)
+
+    with metric_col1:
+        st.metric(
+            "F1 Score",
+            f"{xgb_results['f1']:.2%}",
+            f"Hybrid: {hybrid_results['f1']:.2%}"
+        )
+
+    with metric_col2:
+        st.metric(
+            "ROC-AUC",
+            f"{xgb_results['roc_auc']:.2%}",
+            f"Hybrid: {hybrid_results['roc_auc']:.2%}"
+        )
+
+    with metric_col3:
+        st.metric(
+            "PR-AUC",
+            f"{xgb_results['pr_auc']:.2%}",
+            f"Hybrid: {hybrid_results['pr_auc']:.2%}"
+        )
+
+    st.markdown("### Confusion Matrices")
+
+    cm_col1, cm_col2 = st.columns(2)
+
+    with cm_col1:
+        st.markdown("**XGBoost**")
+        xgb_cm = pd.DataFrame(
+            xgb_results["confusion_matrix"],
+            index=["Actual Normal", "Actual Failure"],
+            columns=["Predicted Normal", "Predicted Failure"],
+        )
+        st.dataframe(
+            xgb_cm,
+            use_container_width=True,
+        )
+
+    with cm_col2:
+        st.markdown("**Hybrid**")
+        hybrid_cm = pd.DataFrame(
+            hybrid_results["confusion_matrix"],
+            index=["Actual Normal", "Actual Failure"],
+            columns=["Predicted Normal", "Predicted Failure"],
+        )
+        st.dataframe(
+            hybrid_cm,
+            use_container_width=True,
+        )
+
+    st.markdown("### Production Configuration")
+
+    config_col1, config_col2, config_col3 = st.columns(3)
+
+    with config_col1:
+        st.metric(
+            "XGBoost Threshold",
+            f"{xgb_results['threshold']:.2f}",
+        )
+
+    with config_col2:
+        st.metric(
+            "Hybrid XGBoost Weight",
+            f"{hybrid_results['xgb_weight']:.2f}",
+        )
+
+    with config_col3:
+        st.metric(
+            "Hybrid Anomaly Weight",
+            f"{hybrid_results['anomaly_weight']:.2f}",
+        )
+
+    st.caption(
+        "The hybrid model combines XGBoost failure probability "
+        "with Isolation Forest anomaly risk."
+    )
+
+    st.divider()
