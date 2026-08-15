@@ -2,6 +2,7 @@
 
 An end-to-end predictive maintenance system built with **Python**, **XGBoost**, **Isolation Forest**, **SHAP**, **FastAPI**, and **Streamlit**. The system predicts machine failure probability, detects anomalous operating conditions, combines both signals into a hybrid maintenance risk score, explains predictions using SHAP, and provides interactive what-if scenario analysis through a production-style dashboard.
 
+[![Live Demo](https://img.shields.io/badge/Live-Demo-28a745?logo=streamlit&logoColor=white)](https://industrial-predictive-maintenance-fsfkyrzycxphc6xnzqpo6k.streamlit.app/)
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
 ![XGBoost](https://img.shields.io/badge/XGBoost-3.4.0-orange)
 ![Scikit--learn](https://img.shields.io/badge/Scikit--learn-1.9.0-F7931E)
