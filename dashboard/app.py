@@ -40,6 +40,7 @@ st.markdown(
     padding-bottom: 3rem;
 }
 
+
 /* Remove Streamlit branding */
 
 #MainMenu {
@@ -49,6 +50,7 @@ st.markdown(
 footer {
     visibility: hidden;
 }
+
 
 /* Header */
 
@@ -89,6 +91,7 @@ footer {
     background-color: #3fb950;
 }
 
+
 /* Section */
 
 .section-title {
@@ -103,6 +106,7 @@ footer {
     color: #8b949e;
     margin-bottom: 1.2rem;
 }
+
 
 /* Metric cards */
 
@@ -132,6 +136,7 @@ footer {
     font-size: 0.74rem;
     margin-top: 0.55rem;
 }
+
 
 /* Risk */
 
@@ -166,6 +171,7 @@ footer {
     color: #ff7b72;
 }
 
+
 /* Recommendation */
 
 .recommendation-box {
@@ -177,11 +183,97 @@ footer {
     font-size: 0.95rem;
 }
 
+
+/* SHAP Explainability */
+
+.shap-card {
+    background-color: #111820;
+    border: 1px solid #26303a;
+    border-radius: 10px;
+    padding: 1.4rem;
+    margin-top: 0.5rem;
+}
+
+.shap-description {
+    color: #8b949e;
+    font-size: 0.85rem;
+    margin-bottom: 1.4rem;
+}
+
+.shap-row {
+    margin-bottom: 1rem;
+}
+
+.shap-feature {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+    color: #c9d1d9;
+    font-size: 0.85rem;
+}
+
+.shap-impact {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #8b949e;
+}
+
+.shap-bar-container {
+    width: 100%;
+    height: 8px;
+    background-color: #1b222c;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.shap-bar-negative {
+    height: 100%;
+    background-color: #3b82f6;
+    border-radius: 4px;
+}
+
+.shap-bar-positive {
+    height: 100%;
+    background-color: #f85149;
+    border-radius: 4px;
+}
+
+.shap-legend {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1.2rem;
+    color: #8b949e;
+    font-size: 0.75rem;
+}
+
+.shap-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.shap-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.shap-negative-dot {
+    background-color: #3b82f6;
+}
+
+.shap-positive-dot {
+    background-color: #f85149;
+}
+
+
 /* Streamlit inputs */
 
 label {
     color: #c9d1d9 !important;
 }
+
 
 /* Analyze button */
 
@@ -199,6 +291,7 @@ label {
     background-color: #2ea043;
     border-color: #3fb950;
 }
+
 
 /* Divider */
 
@@ -219,7 +312,9 @@ hr {
 st.html(
     """
     <div class="header-container">
+
         <div>
+
             <div class="header-title">
                 Industrial Predictive Maintenance
             </div>
@@ -227,12 +322,17 @@ st.html(
             <div class="header-subtitle">
                 AI-powered machine health monitoring and risk assessment
             </div>
+
         </div>
 
         <div class="system-status">
+
             <span class="status-dot"></span>
+
             Prediction API Online
+
         </div>
+
     </div>
     """
 )
@@ -380,6 +480,7 @@ if "prediction" in st.session_state:
         """
     )
 
+
     metric1, metric2, metric3, metric4 = st.columns(4)
 
 
@@ -392,6 +493,7 @@ if "prediction" in st.session_state:
         st.html(
             f"""
             <div class="metric-card">
+
                 <div class="metric-label">
                     Failure Probability
                 </div>
@@ -403,6 +505,7 @@ if "prediction" in st.session_state:
                 <div class="metric-description">
                     XGBoost failure prediction
                 </div>
+
             </div>
             """
         )
@@ -417,6 +520,7 @@ if "prediction" in st.session_state:
         st.html(
             f"""
             <div class="metric-card">
+
                 <div class="metric-label">
                     Anomaly Risk
                 </div>
@@ -428,6 +532,7 @@ if "prediction" in st.session_state:
                 <div class="metric-description">
                     Isolation Forest anomaly score
                 </div>
+
             </div>
             """
         )
@@ -442,6 +547,7 @@ if "prediction" in st.session_state:
         st.html(
             f"""
             <div class="metric-card">
+
                 <div class="metric-label">
                     Hybrid Risk
                 </div>
@@ -453,6 +559,7 @@ if "prediction" in st.session_state:
                 <div class="metric-description">
                     Combined model risk
                 </div>
+
             </div>
             """
         )
@@ -473,6 +580,7 @@ if "prediction" in st.session_state:
         st.html(
             f"""
             <div class="metric-card">
+
                 <div class="metric-label">
                     Prediction
                 </div>
@@ -484,6 +592,7 @@ if "prediction" in st.session_state:
                 <div class="metric-description">
                     XGBoost classification
                 </div>
+
             </div>
             """
         )
@@ -555,46 +664,59 @@ if "prediction" in st.session_state:
     st.write("")
 
 
-    # --------------------------------------------------
+    # ========================================================
     # Operating Conditions
-    # --------------------------------------------------
-    
+    # ========================================================
+
     st.subheader("Operating Conditions")
-    
+
+
     condition1, condition2, condition3 = st.columns(3)
     condition4, condition5, condition6 = st.columns(3)
-    
+
+
     with condition1:
+
         st.metric(
             "Machine Type",
             machine_type
         )
-    
+
+
     with condition2:
+
         st.metric(
             "Air Temperature",
             f"{air_temperature:.1f} K"
         )
-    
+
+
     with condition3:
+
         st.metric(
             "Process Temperature",
             f"{process_temperature:.1f} K"
         )
-    
+
+
     with condition4:
+
         st.metric(
             "Rotational Speed",
             f"{rotational_speed:.0f} RPM"
         )
-    
+
+
     with condition5:
+
         st.metric(
             "Torque",
             f"{torque:.1f} Nm"
         )
-    
+
+
     with condition6:
+
         st.metric(
             "Tool Wear",
             f"{tool_wear:.0f} min"
@@ -624,3 +746,191 @@ if "prediction" in st.session_state:
         </div>
         """
     )
+
+
+    st.write("")
+
+
+    # ========================================================
+    # Model Explainability - SHAP
+    # ========================================================
+
+    st.html(
+        """
+        <div class="section-title">
+            Model Explainability
+        </div>
+
+        <div class="section-description">
+            Factors that influenced the XGBoost prediction.
+        </div>
+        """
+    )
+
+
+    shap_explanation = result.get(
+        "shap_explanation",
+        []
+    )
+
+
+    if shap_explanation:
+
+        # ----------------------------------------------------
+        # Sort features by absolute SHAP impact
+        # ----------------------------------------------------
+
+        shap_explanation = sorted(
+            shap_explanation,
+            key=lambda x: abs(float(x["impact"])),
+            reverse=True
+        )
+
+
+        max_impact = max(
+            abs(float(item["impact"]))
+            for item in shap_explanation
+        )
+
+
+        shap_html = """
+        <div class="shap-card">
+        """
+
+
+        shap_html += """
+        <div class="shap-description">
+            Negative values push the prediction toward lower
+            failure risk. Positive values push the prediction
+            toward higher failure risk.
+        </div>
+        """
+
+
+        # ----------------------------------------------------
+        # SHAP feature rows
+        # ----------------------------------------------------
+
+        for item in shap_explanation:
+
+            feature = item["feature"]
+
+            impact = float(
+                item["impact"]
+            )
+
+
+            if max_impact > 0:
+
+                bar_width = (
+                    abs(impact) / max_impact
+                ) * 100
+
+            else:
+
+                bar_width = 0
+
+
+            # ------------------------------------------------
+            # Negative impact
+            # ------------------------------------------------
+
+            if impact < 0:
+
+                bar_html = f"""
+                <div class="shap-bar-container">
+
+                    <div
+                        class="shap-bar-negative"
+                        style="width: {bar_width:.1f}%"
+                    ></div>
+
+                </div>
+                """
+
+
+            # ------------------------------------------------
+            # Positive impact
+            # ------------------------------------------------
+
+            else:
+
+                bar_html = f"""
+                <div class="shap-bar-container">
+
+                    <div
+                        class="shap-bar-positive"
+                        style="width: {bar_width:.1f}%"
+                    ></div>
+
+                </div>
+                """
+
+
+            shap_html += f"""
+            <div class="shap-row">
+
+                <div class="shap-feature">
+
+                    <span>
+                        {feature}
+                    </span>
+
+                    <span class="shap-impact">
+                        {impact:+.3f}
+                    </span>
+
+                </div>
+
+                {bar_html}
+
+            </div>
+            """
+
+
+        # ----------------------------------------------------
+        # Legend
+        # ----------------------------------------------------
+
+        shap_html += """
+            <div class="shap-legend">
+
+                <div class="shap-legend-item">
+
+                    <span
+                        class="shap-legend-dot
+                               shap-negative-dot">
+                    </span>
+
+                    Lower failure risk
+
+                </div>
+
+
+                <div class="shap-legend-item">
+
+                    <span
+                        class="shap-legend-dot
+                               shap-positive-dot">
+                    </span>
+
+                    Higher failure risk
+
+                </div>
+
+            </div>
+
+        </div>
+        """
+
+
+        st.html(
+            shap_html
+        )
+
+
+    else:
+
+        st.info(
+            "SHAP explanation is not available for this prediction."
+        )

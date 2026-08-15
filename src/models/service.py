@@ -8,7 +8,8 @@ from src.models.predictor import (
     predict_failure,
     calculate_hybrid_risk,
     determine_risk_state,
-    maintenance_action
+    maintenance_action,
+    calculate_shap_explanation
 )
 
 from src.models.anomaly import (
@@ -16,54 +17,106 @@ from src.models.anomaly import (
 )
 
 
+# --------------------------------------------------
+# Complete Machine Prediction
+# --------------------------------------------------
+
 def predict_machine(
-    machine_data: dict
+    machine_data
 ) -> dict:
     """
-    Run the complete predictive-maintenance
-    pipeline for a single machine observation.
+    Run the complete predictive maintenance pipeline.
+
+    Accepts either:
+
+        - Python dictionary containing one machine
+          observation
+        - pandas DataFrame containing machine data
+
+    Pipeline:
+
+        Raw machine data
+            ↓
+        Feature engineering
+            ↓
+        XGBoost failure prediction
+            ↓
+        Isolation Forest anomaly detection
+            ↓
+        Hybrid risk calculation
+            ↓
+        Risk state
+            ↓
+        Maintenance recommendation
+            ↓
+        SHAP explanation
     """
 
-    # ----------------------------------------------
-    # 1. Convert input to DataFrame
-    # ----------------------------------------------
+    # --------------------------------------------------
+    # Normalize input
+    # --------------------------------------------------
 
-    df = pd.DataFrame([machine_data])
+    if isinstance(machine_data, dict):
 
-    # ----------------------------------------------
-    # 2. Feature engineering
-    # ----------------------------------------------
+        machine_data = pd.DataFrame(
+            [machine_data]
+        )
 
-    df = create_engineered_features(df)
+    elif not isinstance(
+        machine_data,
+        pd.DataFrame
+    ):
 
-    # ----------------------------------------------
-    # 3. XGBoost failure prediction
-    # ----------------------------------------------
+        raise TypeError(
+            "machine_data must be a dictionary "
+            "or pandas DataFrame"
+        )
 
-    failure_result = predict_failure(df)
+
+    # --------------------------------------------------
+    # Feature Engineering
+    # --------------------------------------------------
+
+    features = create_engineered_features(
+        machine_data
+    )
+
+
+    # --------------------------------------------------
+    # XGBoost Failure Prediction
+    # --------------------------------------------------
+
+    failure_result = predict_failure(
+        features
+    )
 
     failure_probability = (
         failure_result["failure_probability"]
     )
 
-    # ----------------------------------------------
-    # 4. Isolation Forest anomaly detection
-    # ----------------------------------------------
 
-    anomaly_risk = calculate_anomaly_risk(df)
+    # --------------------------------------------------
+    # Anomaly Detection
+    # --------------------------------------------------
 
-    # ----------------------------------------------
-    # 5. Hybrid risk
-    # ----------------------------------------------
+    anomaly_risk = calculate_anomaly_risk(
+        features
+    )
+
+
+    # --------------------------------------------------
+    # Hybrid Risk
+    # --------------------------------------------------
 
     hybrid_risk = calculate_hybrid_risk(
         failure_probability,
         anomaly_risk
     )
 
-    # ----------------------------------------------
-    # 6. Risk state
-    # ----------------------------------------------
+
+    # --------------------------------------------------
+    # Risk State
+    # --------------------------------------------------
 
     risk_state = determine_risk_state(
         failure_probability,
@@ -71,17 +124,28 @@ def predict_machine(
         hybrid_risk
     )
 
-    # ----------------------------------------------
-    # 7. Maintenance recommendation
-    # ----------------------------------------------
+
+    # --------------------------------------------------
+    # Maintenance Recommendation
+    # --------------------------------------------------
 
     action = maintenance_action(
         risk_state
     )
 
-    # ----------------------------------------------
-    # 8. Return final result
-    # ----------------------------------------------
+
+    # --------------------------------------------------
+    # SHAP Explainability
+    # --------------------------------------------------
+
+    shap_explanation = calculate_shap_explanation(
+        features
+    )
+
+
+    # --------------------------------------------------
+    # Complete Result
+    # --------------------------------------------------
 
     return {
         "failure_probability": failure_probability,
@@ -91,5 +155,6 @@ def predict_machine(
         "anomaly_risk": anomaly_risk,
         "hybrid_risk": hybrid_risk,
         "risk_state": risk_state,
-        "recommended_action": action
+        "recommended_action": action,
+        "shap_explanation": shap_explanation
     }

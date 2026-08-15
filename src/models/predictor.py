@@ -1,5 +1,6 @@
 import joblib
 import pandas as pd
+import shap
 
 from src.utils.config import (
     XGBOOST_MODEL_PATH,
@@ -46,6 +47,156 @@ def predict_failure(
         "failure_probability": probability,
         "predicted_failure": prediction
     }
+
+
+# --------------------------------------------------
+# SHAP Explainability
+# --------------------------------------------------
+
+def calculate_shap_explanation(
+    df: pd.DataFrame
+) -> list:
+    """
+    Calculate SHAP feature contributions for
+    the current machine prediction.
+
+    The saved XGBoost model is a sklearn Pipeline
+    containing:
+
+        ColumnTransformer
+            -> StandardScaler
+            -> OneHotEncoder
+            -> XGBClassifier
+
+    SHAP is calculated directly on the transformed
+    features that reach the XGBoost classifier.
+    """
+
+    # --------------------------------------------------
+    # Extract pipeline components
+    # --------------------------------------------------
+
+    preprocessor = xgb_model.named_steps[
+        "preprocessor"
+    ]
+
+    classifier = xgb_model.named_steps[
+        "classifier"
+    ]
+
+    # --------------------------------------------------
+    # Transform input using the SAME preprocessing
+    # used during model training
+    # --------------------------------------------------
+
+    transformed = preprocessor.transform(
+        df
+    )
+
+    # --------------------------------------------------
+    # Get transformed feature names
+    # --------------------------------------------------
+
+    feature_names = (
+        preprocessor
+        .get_feature_names_out()
+    )
+
+    # --------------------------------------------------
+    # Create SHAP TreeExplainer
+    # --------------------------------------------------
+
+    explainer = shap.TreeExplainer(
+        classifier
+    )
+
+    shap_values = explainer.shap_values(
+        transformed
+    )
+
+    # --------------------------------------------------
+    # Get SHAP values for first prediction
+    # --------------------------------------------------
+
+    values = shap_values[0]
+
+    # --------------------------------------------------
+    # Convert SHAP output into readable format
+    # --------------------------------------------------
+
+    explanations = []
+
+    for name, value in zip(
+        feature_names,
+        values
+    ):
+
+        # Remove preprocessing prefixes
+        clean_name = name
+
+        if clean_name.startswith("num__"):
+            clean_name = clean_name.replace(
+                "num__",
+                "",
+                1
+            )
+
+        elif clean_name.startswith("cat__"):
+            clean_name = clean_name.replace(
+                "cat__",
+                "",
+                1
+            )
+
+        explanations.append(
+            {
+                "feature": clean_name,
+                "impact": float(value)
+            }
+        )
+
+    # --------------------------------------------------
+    # Combine one-hot encoded Type features
+    # --------------------------------------------------
+
+    type_features = [
+        item
+        for item in explanations
+        if item["feature"].startswith("Type_")
+    ]
+
+    if type_features:
+
+        type_impact = sum(
+            item["impact"]
+            for item in type_features
+        )
+
+        explanations = [
+            item
+            for item in explanations
+            if not item["feature"].startswith(
+                "Type_"
+            )
+        ]
+
+        explanations.append(
+            {
+                "feature": "Product Type",
+                "impact": float(type_impact)
+            }
+        )
+
+    # --------------------------------------------------
+    # Sort by absolute impact
+    # --------------------------------------------------
+
+    explanations.sort(
+        key=lambda item: abs(item["impact"]),
+        reverse=True
+    )
+
+    return explanations
 
 
 # --------------------------------------------------

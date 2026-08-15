@@ -73,6 +73,16 @@ class MachineInput(BaseModel):
 
 
 # --------------------------------------------------
+# SHAP explanation schema
+# --------------------------------------------------
+
+class SHAPExplanation(BaseModel):
+
+    feature: str
+    impact: float
+
+
+# --------------------------------------------------
 # Response schema
 # --------------------------------------------------
 
@@ -86,6 +96,8 @@ class PredictionResponse(BaseModel):
 
     risk_state: str
     recommended_action: str
+
+    shap_explanation: list[SHAPExplanation]
 
 
 # --------------------------------------------------
