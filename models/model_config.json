@@ -1,0 +1,20 @@
+{
+    "xgb_threshold": 0.6500000000000001,
+    "hybrid_xgb_weight": 0.5,
+    "hybrid_anomaly_weight": 0.5,
+    "hybrid_threshold": 0.5600000000000003,
+    "anomaly_threshold": 0.08,
+    "normal_anomaly_min": -0.10047553626330141,
+    "normal_anomaly_max": 0.18683157279182172,
+    "features": [
+        "Type",
+        "Air temperature",
+        "Process temperature",
+        "Rotational speed",
+        "Torque",
+        "Tool wear",
+        "Temperature Difference",
+        "Mechanical Power kW",
+        "Temperature Ratio"
+    ]
+}
