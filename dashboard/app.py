@@ -1,5 +1,22 @@
+import sys
+from pathlib import Path
+
 import requests
+import pandas as pd
 import streamlit as st
+
+
+# ============================================================
+# Project Root
+# ============================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+
+from src.scenarios.simulator import run_scenario
 
 
 # ============================================================
@@ -933,4 +950,311 @@ if "prediction" in st.session_state:
 
         st.info(
             "SHAP explanation is not available for this prediction."
+        )
+        # ========================================================
+    # Scenario Analysis
+    # ========================================================
+
+    st.write("")
+
+    st.html(
+        """
+        <div class="section-title">
+            Scenario Analysis
+        </div>
+
+        <div class="section-description">
+            Explore how changing one operating parameter affects
+            machine failure and anomaly risk.
+        </div>
+        """
+    )
+
+
+    scenario_col1, scenario_col2 = st.columns(2)
+
+
+    # --------------------------------------------------------
+    # Scenario parameter
+    # --------------------------------------------------------
+
+    with scenario_col1:
+
+        scenario_parameter = st.selectbox(
+            "Parameter to vary",
+            [
+                "Tool Wear",
+                "Air Temperature",
+                "Process Temperature",
+                "Torque"
+            ]
+        )
+
+
+    # --------------------------------------------------------
+    # Scenario ranges
+    # --------------------------------------------------------
+
+    with scenario_col2:
+
+        if scenario_parameter == "Tool Wear":
+
+            scenario_values = list(
+                range(0, 251, 25)
+            )
+
+        elif scenario_parameter == "Air Temperature":
+
+            scenario_values = [
+                round(x, 1)
+                for x in list(
+                    range(2950, 3101, 10)
+                )
+            ]
+
+            scenario_values = [
+                x / 10
+                for x in scenario_values
+            ]
+
+        elif scenario_parameter == "Process Temperature":
+
+            scenario_values = [
+                round(x, 1)
+                for x in list(
+                    range(3050, 3201, 10)
+                )
+            ]
+
+            scenario_values = [
+                x / 10
+                for x in scenario_values
+            ]
+
+        else:
+
+            scenario_values = [
+                round(x, 1)
+                for x in list(
+                    range(20, 81, 5)
+                )
+            ]
+
+
+    # --------------------------------------------------------
+    # Display selected range
+    # --------------------------------------------------------
+
+    if scenario_parameter == "Tool Wear":
+
+        st.caption(
+            "Testing tool wear from 0 to 250 minutes."
+        )
+
+    elif scenario_parameter == "Air Temperature":
+
+        st.caption(
+            "Testing air temperature from 295.0 K to 310.0 K."
+        )
+
+    elif scenario_parameter == "Process Temperature":
+
+        st.caption(
+            "Testing process temperature from 305.0 K to 320.0 K."
+        )
+
+    else:
+
+        st.caption(
+            "Testing torque from 20.0 Nm to 80.0 Nm."
+        )
+
+
+    st.write("")
+
+
+    # --------------------------------------------------------
+    # Run Scenario
+    # --------------------------------------------------------
+
+    if st.button(
+        "Run Scenario Analysis",
+        key="run_scenario"
+    ):
+
+        base_machine = {
+            "Type": machine_type,
+            "Air temperature": air_temperature,
+            "Process temperature": process_temperature,
+            "Rotational speed": rotational_speed,
+            "Torque": torque,
+            "Tool wear": tool_wear
+        }
+
+
+        parameter_mapping = {
+
+            "Tool Wear":
+                "Tool wear",
+
+            "Air Temperature":
+                "Air temperature",
+
+            "Process Temperature":
+                "Process temperature",
+
+            "Torque":
+                "Torque"
+        }
+
+
+        parameter_column = parameter_mapping[
+            scenario_parameter
+        ]
+
+
+        with st.spinner(
+            "Running scenario analysis..."
+        ):
+
+            scenario_result = run_scenario(
+                machine_data=base_machine,
+                parameter=parameter_column,
+                values=scenario_values
+            )
+
+
+        st.session_state[
+            "scenario_result"
+        ] = scenario_result
+
+        st.session_state[
+            "scenario_parameter"
+        ] = scenario_parameter
+
+
+    # ========================================================
+    # Scenario Results
+    # ========================================================
+
+    if "scenario_result" in st.session_state:
+
+        scenario_result = st.session_state[
+            "scenario_result"
+        ]
+
+        selected_parameter = st.session_state[
+            "scenario_parameter"
+        ]
+
+
+        st.write("")
+
+
+        st.html(
+            """
+            <div class="section-title">
+                Scenario Results
+            </div>
+
+            <div class="section-description">
+                Model predictions across the selected operating range.
+            </div>
+            """
+        )
+
+
+        # ----------------------------------------------------
+        # Prepare chart data
+        # ----------------------------------------------------
+
+        chart_data = scenario_result.set_index(
+            "Parameter"
+        )[
+            [
+                "Failure Probability",
+                "Anomaly Risk",
+                "Hybrid Risk"
+            ]
+        ].copy()
+
+
+        chart_data = chart_data * 100
+
+
+        # ----------------------------------------------------
+        # Risk chart
+        # ----------------------------------------------------
+
+        st.line_chart(
+            chart_data,
+            y_label="Risk (%)",
+            x_label=selected_parameter
+        )
+
+
+        st.write("")
+
+
+        # ----------------------------------------------------
+        # Scenario table
+        # ----------------------------------------------------
+
+        display_result = scenario_result.copy()
+
+
+        display_result[
+            "Failure Probability"
+        ] = (
+            display_result[
+                "Failure Probability"
+            ] * 100
+        ).round(2)
+
+
+        display_result[
+            "Anomaly Risk"
+        ] = (
+            display_result[
+                "Anomaly Risk"
+            ] * 100
+        ).round(2)
+
+
+        display_result[
+            "Hybrid Risk"
+        ] = (
+            display_result[
+                "Hybrid Risk"
+            ] * 100
+        ).round(2)
+
+
+        display_result = display_result.rename(
+            columns={
+                "Parameter":
+                    selected_parameter,
+
+                "Failure Probability":
+                    "Failure Probability (%)",
+
+                "Anomaly Risk":
+                    "Anomaly Risk (%)",
+
+                "Hybrid Risk":
+                    "Hybrid Risk (%)",
+
+                "Risk State":
+                    "Risk State",
+
+                "Recommended Action":
+                    "Recommended Action"
+            }
+        )
+
+
+        st.dataframe(
+            display_result,
+            use_container_width=True,
+            hide_index=True
         )
