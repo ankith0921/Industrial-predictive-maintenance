@@ -135,6 +135,14 @@ footer {
     min-height: 125px;
 }
 
+.scenario-range-card {
+    background-color: #111820;
+    border: 1px solid #26303a;
+    border-radius: 10px;
+    padding: 1.25rem;
+    min-height: 78px;
+}
+
 .metric-label {
     color: #8b949e;
     font-size: 0.82rem;
@@ -337,7 +345,7 @@ st.html(
             </div>
 
             <div class="header-subtitle">
-                AI-powered machine health monitoring and risk assessment
+                Machine health monitoring and risk assessment
             </div>
 
         </div>
@@ -509,7 +517,7 @@ if "prediction" in st.session_state:
 
         st.html(
             f"""
-            <div class="metric-card">
+            <div class="scenario-range-card">
 
                 <div class="metric-label">
                     Failure Probability
@@ -951,8 +959,9 @@ if "prediction" in st.session_state:
         st.info(
             "SHAP explanation is not available for this prediction."
         )
-        # ========================================================
-    # Scenario Analysis
+        
+    # ========================================================
+    # What-If Risk Analysis
     # ========================================================
 
     st.write("")
@@ -960,22 +969,22 @@ if "prediction" in st.session_state:
     st.html(
         """
         <div class="section-title">
-            Scenario Analysis
+            What-If Risk Analysis
         </div>
 
         <div class="section-description">
             Explore how changing one operating parameter affects
-            machine failure and anomaly risk.
+            the predicted machine risk while keeping all other
+            conditions constant.
         </div>
         """
     )
-
 
     scenario_col1, scenario_col2 = st.columns(2)
 
 
     # --------------------------------------------------------
-    # Scenario parameter
+    # Parameter selection
     # --------------------------------------------------------
 
     with scenario_col1:
@@ -986,87 +995,91 @@ if "prediction" in st.session_state:
                 "Tool Wear",
                 "Air Temperature",
                 "Process Temperature",
+                "Rotational Speed",
                 "Torque"
-            ]
+            ],
+            key="scenario_parameter_selector"
         )
 
 
     # --------------------------------------------------------
-    # Scenario ranges
-    # --------------------------------------------------------
-
-    with scenario_col2:
-
-        if scenario_parameter == "Tool Wear":
-
-            scenario_values = list(
-                range(0, 251, 25)
-            )
-
-        elif scenario_parameter == "Air Temperature":
-
-            scenario_values = [
-                round(x, 1)
-                for x in list(
-                    range(2950, 3101, 10)
-                )
-            ]
-
-            scenario_values = [
-                x / 10
-                for x in scenario_values
-            ]
-
-        elif scenario_parameter == "Process Temperature":
-
-            scenario_values = [
-                round(x, 1)
-                for x in list(
-                    range(3050, 3201, 10)
-                )
-            ]
-
-            scenario_values = [
-                x / 10
-                for x in scenario_values
-            ]
-
-        else:
-
-            scenario_values = [
-                round(x, 1)
-                for x in list(
-                    range(20, 81, 5)
-                )
-            ]
-
-
-    # --------------------------------------------------------
-    # Display selected range
+    # Generate scenario values
     # --------------------------------------------------------
 
     if scenario_parameter == "Tool Wear":
 
-        st.caption(
+        scenario_values = list(
+            range(0, 251, 25)
+        )
+
+        range_description = (
             "Testing tool wear from 0 to 250 minutes."
         )
 
+
     elif scenario_parameter == "Air Temperature":
 
-        st.caption(
+        scenario_values = [
+            round(x / 10, 1)
+            for x in range(2950, 3101, 10)
+        ]
+
+        range_description = (
             "Testing air temperature from 295.0 K to 310.0 K."
         )
 
+
     elif scenario_parameter == "Process Temperature":
 
-        st.caption(
+        scenario_values = [
+            round(x / 10, 1)
+            for x in range(3050, 3201, 10)
+        ]
+
+        range_description = (
             "Testing process temperature from 305.0 K to 320.0 K."
         )
 
+
+    elif scenario_parameter == "Rotational Speed":
+
+        scenario_values = list(
+            range(1000, 2501, 100)
+        )
+
+        range_description = (
+            "Testing rotational speed from 1000 to 2500 RPM."
+        )
+
+
     else:
 
-        st.caption(
-            "Testing torque from 20.0 Nm to 80.0 Nm."
+        scenario_values = [
+            round(x / 10, 1)
+            for x in range(200, 801, 50)
+        ]
+
+        range_description = (
+            "Testing torque from 20.0 to 80.0 Nm."
+        )
+
+
+    with scenario_col2:
+
+        st.html(
+            f"""
+            <div class="metric-card">
+
+                <div class="metric-label">
+                    Scenario Range
+                </div>
+
+                <div class="metric-description">
+                    {range_description}
+                </div>
+
+            </div>
+            """
         )
 
 
@@ -1074,7 +1087,7 @@ if "prediction" in st.session_state:
 
 
     # --------------------------------------------------------
-    # Run Scenario
+    # Run scenario
     # --------------------------------------------------------
 
     if st.button(
@@ -1102,6 +1115,9 @@ if "prediction" in st.session_state:
 
             "Process Temperature":
                 "Process temperature",
+
+            "Rotational Speed":
+                "Rotational speed",
 
             "Torque":
                 "Torque"
@@ -1165,7 +1181,165 @@ if "prediction" in st.session_state:
 
 
         # ----------------------------------------------------
-        # Prepare chart data
+        # Risk calculations
+        # ----------------------------------------------------
+
+        hybrid_risks = (
+            scenario_result[
+                "Hybrid Risk"
+            ]
+        )
+
+        failure_risks = (
+            scenario_result[
+                "Failure Probability"
+            ]
+        )
+
+        anomaly_risks = (
+            scenario_result[
+                "Anomaly Risk"
+            ]
+        )
+
+
+        min_index = hybrid_risks.idxmin()
+        max_index = hybrid_risks.idxmax()
+
+
+        min_risk = hybrid_risks.loc[
+            min_index
+        ]
+
+        max_risk = hybrid_risks.loc[
+            max_index
+        ]
+
+
+        min_parameter_value = (
+            scenario_result.loc[
+                min_index,
+                "Parameter"
+            ]
+        )
+
+        max_parameter_value = (
+            scenario_result.loc[
+                max_index,
+                "Parameter"
+            ]
+        )
+
+
+        # ----------------------------------------------------
+        # Trend analysis
+        # ----------------------------------------------------
+
+        first_risk = float(
+            hybrid_risks.iloc[0]
+        )
+
+        last_risk = float(
+            hybrid_risks.iloc[-1]
+        )
+
+        minimum_risk = float(
+            hybrid_risks.min()
+        )
+
+        minimum_position = (
+            hybrid_risks.values.argmin()
+        )
+
+
+        if last_risk > first_risk:
+
+            if minimum_position > 0:
+
+                trend_description = (
+                    "Risk decreases initially and then "
+                    "increases across the later part of "
+                    "the tested range."
+                )
+
+            else:
+
+                trend_description = (
+                    "Risk generally increases across "
+                    "the tested range."
+                )
+
+        elif last_risk < first_risk:
+
+            trend_description = (
+                "Risk generally decreases across "
+                "the tested range."
+            )
+
+        else:
+
+            trend_description = (
+                "Risk remains relatively stable across "
+                "the tested range."
+            )
+
+
+        # ----------------------------------------------------
+        # Scenario summary
+        # ----------------------------------------------------
+
+        st.html(
+            f"""
+            <div class="shap-card">
+
+                <div class="metric-label">
+                    Scenario Summary
+                </div>
+
+                <div class="metric-description">
+                    {trend_description}
+                </div>
+
+            </div>
+            """
+        )
+
+
+        summary1, summary2, summary3 = st.columns(3)
+
+
+        with summary1:
+
+            st.metric(
+                "Lowest Hybrid Risk",
+                f"{min_risk * 100:.2f}%",
+                f"at {min_parameter_value:g}"
+            )
+
+
+        with summary2:
+
+            st.metric(
+                "Highest Hybrid Risk",
+                f"{max_risk * 100:.2f}%",
+                f"at {max_parameter_value:g}"
+            )
+
+
+        with summary3:
+
+            st.metric(
+                "Risk Change",
+                f"{(last_risk - first_risk) * 100:+.2f}%",
+                "first to last scenario"
+            )
+
+
+        st.write("")
+
+
+        # ----------------------------------------------------
+        # Risk chart
         # ----------------------------------------------------
 
         chart_data = scenario_result.set_index(
@@ -1181,10 +1355,6 @@ if "prediction" in st.session_state:
 
         chart_data = chart_data * 100
 
-
-        # ----------------------------------------------------
-        # Risk chart
-        # ----------------------------------------------------
 
         st.line_chart(
             chart_data,
@@ -1242,13 +1412,7 @@ if "prediction" in st.session_state:
                     "Anomaly Risk (%)",
 
                 "Hybrid Risk":
-                    "Hybrid Risk (%)",
-
-                "Risk State":
-                    "Risk State",
-
-                "Recommended Action":
-                    "Recommended Action"
+                    "Hybrid Risk (%)"
             }
         )
 

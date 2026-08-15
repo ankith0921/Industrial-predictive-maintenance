@@ -1,6 +1,9 @@
 import pandas as pd
 
-from src.scenarios.simulator import run_scenario
+from src.scenarios.simulator import (
+    predict_scenario,
+    run_scenario
+)
 
 
 machine = {
@@ -11,6 +14,30 @@ machine = {
     "Torque": 42.8,
     "Tool wear": 0
 }
+
+
+def test_predict_scenario():
+
+    result = predict_scenario(
+        machine
+    )
+
+    print("\nSingle Scenario:")
+    print(result)
+
+    assert isinstance(
+        result,
+        dict
+    )
+
+    assert "failure_probability" in result
+    assert "anomaly_risk" in result
+    assert "hybrid_risk" in result
+    assert "risk_state" in result
+    assert "recommended_action" in result
+
+    # Scenario predictions should NOT calculate SHAP
+    assert "shap_explanation" not in result
 
 
 def test_tool_wear_scenario():
@@ -44,3 +71,4 @@ def test_tool_wear_scenario():
     assert "Anomaly Risk" in result.columns
     assert "Hybrid Risk" in result.columns
     assert "Risk State" in result.columns
+    assert "Recommended Action" in result.columns
