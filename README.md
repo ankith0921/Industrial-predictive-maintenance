@@ -1,6 +1,6 @@
 # Industrial Predictive Maintenance
 
-An end-to-end AI-powered predictive maintenance system built with **Python**, **XGBoost**, **Isolation Forest**, **SHAP**, **FastAPI**, and **Streamlit**. The system predicts machine failure probability, detects anomalous operating conditions, combines both signals into a hybrid maintenance risk score, explains predictions using SHAP, and provides interactive what-if scenario analysis through a production-style dashboard.
+An end-to-end predictive maintenance system built with **Python**, **XGBoost**, **Isolation Forest**, **SHAP**, **FastAPI**, and **Streamlit**. The system predicts machine failure probability, detects anomalous operating conditions, combines both signals into a hybrid maintenance risk score, explains predictions using SHAP, and provides interactive what-if scenario analysis through a production-style dashboard.
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
 ![XGBoost](https://img.shields.io/badge/XGBoost-3.4.0-orange)
@@ -125,27 +125,27 @@ FastAPI provides endpoints for:
 # Screenshots
 
 ## Dashboard
-![Dashboard](assets\screenshots\dashboard.png)
+![Dashboard](assets/screenshots/dashboard.png)
 
 ---
 
 ## Machine Health
-![Machine Health](assets\screenshots\machine_health.png)
+![Machine Health](assets/screenshots/machine_health.png)
 
 ---
 
 ## SHAP Explainability
-![SHAP Explainability](https://chatgpt.com/c/assets/screenshots/shap.png)
+![SHAP Explainability](assets/screenshots/shap.png)
 
 ---
 
 ## What-If Analysis
-![What-If Analysis](assets\screenshots\what_if.png)
+![What-If Analysis](assets/screenshots/what_if.png)
 
 ---
 
 ## Model Performance
-![Model Performance](assets\screenshots\model_performance.png)
+![Model Performance](assets/screenshots/model_performance.png)
 
 ---
 
@@ -480,13 +480,13 @@ Industrial-predictive-maintenance/
 ## Clone the Repository
 
 ```bash
-git clone https://github.com/ankith0921/industrial-predictive-maintenance.git
+git clone https://github.com/ankith0921/Industrial-predictive-maintenance.git
 ```
 
 ## Navigate to the Project
 
 ```bash
-cd industrial-predictive-maintenance
+cd Industrial-predictive-maintenance
 ```
 
 ## Create a Virtual Environment
