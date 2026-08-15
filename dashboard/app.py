@@ -2,48 +2,258 @@ import requests
 import streamlit as st
 
 
-# --------------------------------------------------
+# ============================================================
 # Configuration
-# --------------------------------------------------
+# ============================================================
 
 API_URL = "http://127.0.0.1:8000"
 
 
-# --------------------------------------------------
-# Page configuration
-# --------------------------------------------------
+# ============================================================
+# Page Configuration
+# ============================================================
 
 st.set_page_config(
     page_title="Industrial Predictive Maintenance",
-    page_icon="⚙️",
-    layout="wide"
+    page_icon=None,
+    layout="wide",
+    initial_sidebar_state="collapsed",
 )
 
 
-# --------------------------------------------------
-# Header
-# --------------------------------------------------
-
-st.title("⚙️ Industrial Predictive Maintenance")
+# ============================================================
+# Custom CSS
+# ============================================================
 
 st.markdown(
     """
-    **AI-powered machine health monitoring**
+<style>
 
-    Predict machine failure, detect abnormal operating
-    conditions, and receive maintenance recommendations.
+.stApp {
+    background-color: #0b0f14;
+    color: #e6edf3;
+}
+
+.block-container {
+    max-width: 1450px;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+}
+
+/* Remove Streamlit branding */
+
+#MainMenu {
+    visibility: hidden;
+}
+
+footer {
+    visibility: hidden;
+}
+
+/* Header */
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #26303a;
+    margin-bottom: 2rem;
+}
+
+.header-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #f0f3f6;
+    letter-spacing: -0.02em;
+}
+
+.header-subtitle {
+    font-size: 0.9rem;
+    color: #8b949e;
+    margin-top: 0.35rem;
+}
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #8b949e;
+    font-size: 0.85rem;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #3fb950;
+}
+
+/* Section */
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #f0f3f6;
+    margin-bottom: 0.35rem;
+}
+
+.section-description {
+    font-size: 0.85rem;
+    color: #8b949e;
+    margin-bottom: 1.2rem;
+}
+
+/* Metric cards */
+
+.metric-card {
+    background-color: #111820;
+    border: 1px solid #26303a;
+    border-radius: 10px;
+    padding: 1.25rem;
+    min-height: 125px;
+}
+
+.metric-label {
+    color: #8b949e;
+    font-size: 0.82rem;
+    margin-bottom: 0.65rem;
+}
+
+.metric-value {
+    color: #f0f3f6;
+    font-size: 1.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.metric-description {
+    color: #6e7681;
+    font-size: 0.74rem;
+    margin-top: 0.55rem;
+}
+
+/* Risk */
+
+.risk-box {
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.risk-healthy {
+    background-color: #0f2a1c;
+    border: 1px solid #238636;
+    color: #56d364;
+}
+
+.risk-anomalous {
+    background-color: #2a210f;
+    border: 1px solid #9e6a03;
+    color: #e3b341;
+}
+
+.risk-predicted {
+    background-color: #2b1b0f;
+    border: 1px solid #d29922;
+    color: #f2cc60;
+}
+
+.risk-critical {
+    background-color: #2d1215;
+    border: 1px solid #da3633;
+    color: #ff7b72;
+}
+
+/* Recommendation */
+
+.recommendation-box {
+    background-color: #111820;
+    border: 1px solid #26303a;
+    border-radius: 10px;
+    padding: 1.3rem 1.4rem;
+    color: #c9d1d9;
+    font-size: 0.95rem;
+}
+
+/* Streamlit inputs */
+
+label {
+    color: #c9d1d9 !important;
+}
+
+/* Analyze button */
+
+.stButton > button {
+    width: 100%;
+    min-height: 42px;
+    background-color: #238636;
+    color: #ffffff;
+    border: 1px solid #2ea043;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.stButton > button:hover {
+    background-color: #2ea043;
+    border-color: #3fb950;
+}
+
+/* Divider */
+
+hr {
+    border-color: #26303a;
+}
+
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+
+# ============================================================
+# Header
+# ============================================================
+
+st.html(
+    """
+    <div class="header-container">
+        <div>
+            <div class="header-title">
+                Industrial Predictive Maintenance
+            </div>
+
+            <div class="header-subtitle">
+                AI-powered machine health monitoring and risk assessment
+            </div>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            Prediction API Online
+        </div>
+    </div>
     """
 )
 
 
-st.divider()
+# ============================================================
+# Machine Parameters
+# ============================================================
 
+st.html(
+    """
+    <div class="section-title">
+        Machine Parameters
+    </div>
 
-# --------------------------------------------------
-# Machine Input
-# --------------------------------------------------
+    <div class="section-description">
+        Enter the current operating conditions of the machine.
+    </div>
+    """
+)
 
-st.subheader("Machine Parameters")
 
 col1, col2, col3 = st.columns(3)
 
@@ -52,14 +262,14 @@ with col1:
 
     machine_type = st.selectbox(
         "Machine Type",
-        ["L", "M", "H"]
+        ["L", "M", "H"],
     )
 
     air_temperature = st.number_input(
         "Air Temperature (K)",
         min_value=0.0,
         value=298.1,
-        step=0.1
+        step=0.1,
     )
 
 
@@ -69,14 +279,14 @@ with col2:
         "Process Temperature (K)",
         min_value=0.0,
         value=308.6,
-        step=0.1
+        step=0.1,
     )
 
     rotational_speed = st.number_input(
         "Rotational Speed (RPM)",
         min_value=1.0,
         value=1551.0,
-        step=1.0
+        step=1.0,
     )
 
 
@@ -86,29 +296,25 @@ with col3:
         "Torque (Nm)",
         min_value=0.0,
         value=42.8,
-        step=0.1
+        step=0.1,
     )
 
     tool_wear = st.number_input(
         "Tool Wear (min)",
         min_value=0.0,
         value=0.0,
-        step=1.0
+        step=1.0,
     )
 
 
-st.divider()
+st.write("")
 
 
-# --------------------------------------------------
-# Prediction
-# --------------------------------------------------
+# ============================================================
+# Analyze Machine
+# ============================================================
 
-if st.button(
-    "🔍 Analyze Machine",
-    type="primary",
-    use_container_width=True
-):
+if st.button("Analyze Machine"):
 
     payload = {
         "type": machine_type,
@@ -116,7 +322,7 @@ if st.button(
         "process_temperature": process_temperature,
         "rotational_speed": rotational_speed,
         "torque": torque,
-        "tool_wear": tool_wear
+        "tool_wear": tool_wear,
     }
 
     try:
@@ -124,38 +330,36 @@ if st.button(
         response = requests.post(
             f"{API_URL}/predict",
             json=payload,
-            timeout=10
+            timeout=10,
         )
 
         if response.status_code == 200:
 
-            result = response.json()
-
-            st.session_state["prediction"] = result
+            st.session_state["prediction"] = response.json()
 
         else:
 
             st.error(
-                f"API error: {response.status_code}"
+                f"Prediction API returned status code "
+                f"{response.status_code}."
             )
 
     except requests.exceptions.ConnectionError:
 
         st.error(
-            "Unable to connect to the FastAPI server. "
-            "Make sure the API is running."
+            "Unable to connect to the prediction API."
         )
 
     except requests.exceptions.Timeout:
 
         st.error(
-            "The prediction request timed out."
+            "Prediction request timed out."
         )
 
 
-# --------------------------------------------------
+# ============================================================
 # Results
-# --------------------------------------------------
+# ============================================================
 
 if "prediction" in st.session_state:
 
@@ -163,86 +367,260 @@ if "prediction" in st.session_state:
 
     st.divider()
 
-    st.subheader("Machine Health Analysis")
 
-    # ----------------------------------------------
-    # Metrics
-    # ----------------------------------------------
+    # ========================================================
+    # Machine Health
+    # ========================================================
 
-    col1, col2, col3, col4 = st.columns(4)
+    st.html(
+        """
+        <div class="section-title">
+            Machine Health
+        </div>
+        """
+    )
 
-    with col1:
+    metric1, metric2, metric3, metric4 = st.columns(4)
 
-        st.metric(
-            "Failure Probability",
-            f"{result['failure_probability'] * 100:.2f}%"
+
+    # --------------------------------------------------------
+    # Failure Probability
+    # --------------------------------------------------------
+
+    with metric1:
+
+        st.html(
+            f"""
+            <div class="metric-card">
+                <div class="metric-label">
+                    Failure Probability
+                </div>
+
+                <div class="metric-value">
+                    {result["failure_probability"] * 100:.2f}%
+                </div>
+
+                <div class="metric-description">
+                    XGBoost failure prediction
+                </div>
+            </div>
+            """
         )
 
-    with col2:
 
-        st.metric(
-            "Anomaly Risk",
-            f"{result['anomaly_risk'] * 100:.2f}%"
+    # --------------------------------------------------------
+    # Anomaly Risk
+    # --------------------------------------------------------
+
+    with metric2:
+
+        st.html(
+            f"""
+            <div class="metric-card">
+                <div class="metric-label">
+                    Anomaly Risk
+                </div>
+
+                <div class="metric-value">
+                    {result["anomaly_risk"] * 100:.2f}%
+                </div>
+
+                <div class="metric-description">
+                    Isolation Forest anomaly score
+                </div>
+            </div>
+            """
         )
 
-    with col3:
 
-        st.metric(
-            "Hybrid Risk",
-            f"{result['hybrid_risk'] * 100:.2f}%"
+    # --------------------------------------------------------
+    # Hybrid Risk
+    # --------------------------------------------------------
+
+    with metric3:
+
+        st.html(
+            f"""
+            <div class="metric-card">
+                <div class="metric-label">
+                    Hybrid Risk
+                </div>
+
+                <div class="metric-value">
+                    {result["hybrid_risk"] * 100:.2f}%
+                </div>
+
+                <div class="metric-description">
+                    Combined model risk
+                </div>
+            </div>
+            """
         )
 
-    with col4:
 
-        st.metric(
-            "Prediction",
+    # --------------------------------------------------------
+    # Prediction
+    # --------------------------------------------------------
+
+    with metric4:
+
+        prediction_label = (
             "FAILURE"
             if result["predicted_failure"]
             else "NORMAL"
         )
 
+        st.html(
+            f"""
+            <div class="metric-card">
+                <div class="metric-label">
+                    Prediction
+                </div>
 
-    # ----------------------------------------------
-    # Risk state
-    # ----------------------------------------------
+                <div class="metric-value">
+                    {prediction_label}
+                </div>
+
+                <div class="metric-description">
+                    XGBoost classification
+                </div>
+            </div>
+            """
+        )
+
+
+    st.write("")
+
+
+    # ========================================================
+    # Risk Assessment
+    # ========================================================
+
+    st.html(
+        """
+        <div class="section-title">
+            Risk Assessment
+        </div>
+        """
+    )
+
 
     risk_state = result["risk_state"]
 
-    st.subheader("Risk Assessment")
 
     if risk_state == "HEALTHY":
 
-        st.success(
-            "🟢 HEALTHY — Machine operating normally."
+        st.html(
+            """
+            <div class="risk-box risk-healthy">
+                HEALTHY — Machine operating normally.
+            </div>
+            """
         )
+
 
     elif risk_state == "ANOMALOUS":
 
-        st.warning(
-            "🟡 ANOMALOUS — Abnormal operating "
-            "conditions detected."
+        st.html(
+            """
+            <div class="risk-box risk-anomalous">
+                ANOMALOUS — Abnormal operating conditions detected.
+            </div>
+            """
         )
+
 
     elif risk_state == "PREDICTED FAILURE":
 
-        st.warning(
-            "🟠 PREDICTED FAILURE — Preventive "
-            "maintenance recommended."
+        st.html(
+            """
+            <div class="risk-box risk-predicted">
+                PREDICTED FAILURE — Preventive maintenance recommended.
+            </div>
+            """
         )
+
 
     elif risk_state == "CRITICAL":
 
-        st.error(
-            "🔴 CRITICAL — Immediate inspection required."
+        st.html(
+            """
+            <div class="risk-box risk-critical">
+                CRITICAL — Immediate inspection required.
+            </div>
+            """
         )
 
 
-    # ----------------------------------------------
-    # Maintenance recommendation
-    # ----------------------------------------------
+    st.write("")
 
-    st.subheader("Maintenance Recommendation")
 
-    st.info(
-        result["recommended_action"]
+    # --------------------------------------------------
+    # Operating Conditions
+    # --------------------------------------------------
+    
+    st.subheader("Operating Conditions")
+    
+    condition1, condition2, condition3 = st.columns(3)
+    condition4, condition5, condition6 = st.columns(3)
+    
+    with condition1:
+        st.metric(
+            "Machine Type",
+            machine_type
+        )
+    
+    with condition2:
+        st.metric(
+            "Air Temperature",
+            f"{air_temperature:.1f} K"
+        )
+    
+    with condition3:
+        st.metric(
+            "Process Temperature",
+            f"{process_temperature:.1f} K"
+        )
+    
+    with condition4:
+        st.metric(
+            "Rotational Speed",
+            f"{rotational_speed:.0f} RPM"
+        )
+    
+    with condition5:
+        st.metric(
+            "Torque",
+            f"{torque:.1f} Nm"
+        )
+    
+    with condition6:
+        st.metric(
+            "Tool Wear",
+            f"{tool_wear:.0f} min"
+        )
+
+
+    st.write("")
+
+
+    # ========================================================
+    # Maintenance Recommendation
+    # ========================================================
+
+    st.html(
+        """
+        <div class="section-title">
+            Maintenance Recommendation
+        </div>
+        """
+    )
+
+
+    st.html(
+        f"""
+        <div class="recommendation-box">
+            {result["recommended_action"]}
+        </div>
+        """
     )
