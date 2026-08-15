@@ -365,14 +365,6 @@ st.html(
 
         </div>
 
-        <div class="system-status">
-
-            <span class="status-dot"></span>
-
-            Prediction API Online
-
-        </div>
-
     </div>
     """
 )
