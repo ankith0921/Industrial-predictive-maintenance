@@ -16,7 +16,7 @@ An end-to-end AI-powered predictive maintenance system built with **Python**, **
 
 Unexpected machine failures can result in production downtime, maintenance costs, and operational losses.
 
-This project develops an AI-based predictive maintenance system that analyzes machine operating conditions and estimates the likelihood of machine failure before it occurs.
+This project develops an predictive maintenance system that analyzes machine operating conditions and estimates the likelihood of machine failure before it occurs.
 
 The system combines **supervised machine learning** and **unsupervised anomaly detection**:
 
@@ -67,15 +67,6 @@ to produce:
 - Maintenance recommendation
 
 The production configuration uses equal weighting between the two signals.
-
----
-
-## Explainable AI
-
-- SHAP-based prediction explanations
-- Feature-level contribution analysis
-- Identification of important machine parameters
-- Individual machine prediction interpretation
 
 ---
 
@@ -131,25 +122,7 @@ FastAPI provides endpoints for:
 
 ---
 
-## Automated Testing
-
-The project includes automated tests covering:
-
-- API endpoints
-- Input validation
-- Model prediction
-- Model evaluation
-- Hybrid model evaluation
-- Scenario analysis
-- SHAP integration
-
-**Current status: 16 tests passed**
-
----
-
 # Screenshots
-
-> Add the final dashboard screenshots inside `assets/screenshots/` and update these paths if required.
 
 ## Dashboard
 ![Dashboard](assets\screenshots\dashboard.png)
@@ -196,110 +169,6 @@ The dataset contains **10,000 machine observations** with:
 ClassSamplesPercentageNormal9,66196.61%Failure3393.39%
 
 The dataset is highly imbalanced, making metrics such as **Precision, Recall, F1 Score, ROC-AUC, and PR-AUC** important when evaluating the model.
-
----
-
-# Feature Engineering
-
-The system generates additional features from the original machine measurements.
-
-## Temperature Difference
-
-```text
-Process Temperature - Air Temperature
-```
-
-This represents the difference between the process temperature and surrounding air temperature.
-
----
-
-## Mechanical Power
-
-Mechanical power is calculated using torque and rotational speed:
-
-```text
-P = 2π × Torque × Rotational Speed / 60
-```
-
----
-
-## Mechanical Power kW
-
-Mechanical power is converted from watts to kilowatts:
-
-```text
-Mechanical Power / 1000
-```
-
----
-
-## Temperature Ratio
-
-```text
-Process Temperature / Air Temperature
-```
-
-These engineered features provide additional information about machine operating conditions.
-
----
-
-# Machine Learning Models
-
-## XGBoost
-
-XGBoost is used as the primary supervised machine learning model for predicting machine failure.
-
-The model produces:
-
-```text
-Failure Probability
-```
-
-The production classification threshold is:
-
-```text
-0.65
-```
-
-The model also uses class weighting to address the imbalance between normal and failure observations.
-
----
-
-## Isolation Forest
-
-Isolation Forest is used for unsupervised anomaly detection.
-
-Rather than directly predicting the failure label, it identifies observations that differ from the normal operating distribution.
-
-The resulting anomaly score is normalized into:
-
-```text
-Anomaly Risk
-```
-
-between 0 and 1.
-
----
-
-## Hybrid Risk Model
-
-The final risk assessment combines:
-
-```text
-XGBoost Failure Probability
-+
-Isolation Forest Anomaly Risk
-```
-
-The production configuration uses:
-
-```text
-XGBoost Weight   = 0.50
-Anomaly Weight   = 0.50
-Hybrid Threshold = 0.56
-```
-
-This provides a combined risk signal based on both predicted failure probability and abnormal operating behavior.
 
 ---
 
